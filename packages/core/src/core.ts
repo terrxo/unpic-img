@@ -1,6 +1,7 @@
 export type * from "./types.js";
 
 import {
+  CdnOptions,
   UrlTransformerOptions,
   getCanonicalCdnForUrl,
   getTransformer,
@@ -189,6 +190,7 @@ export const getSrcSetEntries = ({
   breakpoints,
   cdn,
   transformer,
+  cdnOptions,
   format,
 }: SrcSetOptions): Array<UrlTransformerOptions> => {
   const canonical = getCanonicalCdnForUrl(src, cdn);
@@ -213,6 +215,7 @@ export const getSrcSetEntries = ({
         width: bp,
         height: transformedHeight,
         format,
+        cdnOptions,
       };
     });
 };
@@ -313,6 +316,7 @@ export function transformProps<
   TStyle = Record<string, string>,
 >(props: UnpicImageProps<TImageAttributes, TStyle>): TImageAttributes {
   /* eslint-disable prefer-const */
+
   let {
     src,
     cdn,
@@ -331,9 +335,15 @@ export function transformProps<
 
   const canonical = src ? getCanonicalCdnForUrl(src, cdn) : undefined;
   let url: URL | string = src;
+  let cdnOptions: CdnOptions["cloudflare_images"] | undefined;
   if (canonical) {
     url = canonical.url;
     transformer ||= getTransformer(canonical.cdn);
+
+    cdnOptions =
+      canonical?.cdn === "cloudflare_images"
+        ? { transformations: { fit: objectFit } }
+        : undefined;
   }
 
   // Auto-generate a low-res image for blurred placeholders
@@ -345,6 +355,7 @@ export function transformProps<
       url,
       width: LOW_RES_WIDTH,
       height: lowResHeight,
+      cdnOptions,
     });
     if (lowResImage) {
       background = lowResImage.toString();
@@ -369,6 +380,7 @@ export function transformProps<
       ...transformedProps.style,
     };
   }
+
   if (transformer) {
     transformedProps.srcset = getSrcSet({
       src: url,
@@ -379,9 +391,15 @@ export function transformProps<
       breakpoints,
       transformer,
       cdn,
+      cdnOptions,
     });
 
-    const transformed = transformer({ url, width, height });
+    const transformed = transformer({
+      url,
+      width,
+      height,
+      cdnOptions,
+    });
 
     if (transformed) {
       url = transformed;
@@ -443,15 +461,21 @@ export function transformSourceProps<
     sizes,
     loading,
     decoding,
+    objectFit,
     ...rest
   } = transformSharedProps(props);
   /* eslint-enable prefer-const, @typescript-eslint/no-unused-vars */
 
   const canonical = src ? getCanonicalCdnForUrl(src, cdn) : undefined;
   let url: URL | string = src;
+  let cdnOptions: CdnOptions["cloudflare_images"] | undefined;
   if (canonical) {
     url = canonical.url;
     transformer ||= getTransformer(canonical.cdn);
+    cdnOptions =
+      canonical?.cdn === "cloudflare_images"
+        ? { transformations: { fit: objectFit } }
+        : undefined;
   }
 
   if (!transformer) {
@@ -471,10 +495,11 @@ export function transformSourceProps<
     breakpoints,
     transformer,
     cdn,
+    cdnOptions,
     format,
   });
 
-  const transformed = transformer({ url, width, height });
+  const transformed = transformer({ url, width, height, cdnOptions });
 
   if (transformed) {
     url = transformed;

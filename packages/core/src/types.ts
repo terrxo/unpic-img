@@ -1,4 +1,4 @@
-import type { ImageCdn, UrlTransformer } from "unpic";
+import type { CdnOptions, ImageCdn, UrlTransformer } from "unpic";
 
 /**
  * HTML image attributes, common to image components in multiple frameworks.
@@ -27,6 +27,7 @@ export interface ImageSourceOptions {
   breakpoints?: number[];
   transformer?: UrlTransformer;
   cdn?: ImageCdn;
+  cdnOptions?: CdnOptions[ImageCdn];
 }
 
 export type ObjectFit =

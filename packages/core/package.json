@@ -21,7 +21,8 @@
     "vitest": "^2.1.2"
   },
   "dependencies": {
-    "unpic": "^3.18.0"
+    "unpic": "github:terrxo/unpic",
+    "unpic.git": "github:terrxo/unpic"
   },
   "main": "./dist/core.js",
   "module": "./dist/core.mjs",
